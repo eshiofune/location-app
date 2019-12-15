@@ -17,9 +17,7 @@ const App = () => {
         </View>
         <View style={styles.locationContainer}>
           <Text style={styles.locationTitle}>Enter your location</Text>
-          <View>
-            <AutoCompleteTextInput />
-          </View>
+          <AutoCompleteTextInput />
         </View>
         <View style={styles.nextContainer}>
           <TouchableOpacity style={styles.button}>
@@ -89,9 +87,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   nextContainer: {
+    position: 'relative',
     width: '100%',
     height: 70,
-    bottom: '41.9%',
+    top: '-35%',
   },
   button: {
     alignItems: 'center',

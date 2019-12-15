@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Text, Alert} from 'react-native';
+import {Text, Alert, PermissionsAndroid} from 'react-native';
 
 import Geolocation from 'react-native-geolocation-service';
 import {GooglePlacesAutocomplete} from './GooglePlacesAutocomplete';
@@ -9,15 +9,6 @@ const AutoCompleteTextInput = () => {
   const [isFocused, setIsFocused] = useState(false);
   const [locationText, setLocationText] = useState('');
   const styles = {
-    label: {
-      width: '60%',
-      position: 'absolute',
-      top: !isFocused ? 18 : 0,
-      fontSize: !isFocused ? 18 : 14,
-      color: !isFocused ? '#aaa' : '#000',
-      marginLeft: '10%',
-      zIndex: -1,
-    },
     autocomplete: {
       container: {
         width: '100%',
@@ -48,6 +39,15 @@ const AutoCompleteTextInput = () => {
         maxHeight: 100,
       },
     },
+    labelStyle: {
+      width: '60%',
+      position: 'absolute',
+      top: !isFocused ? 18 : 0,
+      fontSize: !isFocused ? 18 : 14,
+      color: !isFocused ? '#aaa' : '#000',
+      marginLeft: '10%',
+      zIndex: -1,
+    },
     button: {
       position: 'absolute',
       left: '80%',
@@ -56,7 +56,7 @@ const AutoCompleteTextInput = () => {
       color: 'lightgreen',
     },
   };
-
+  
   function handleFocus() {
     setIsFocused(true);
   }
@@ -71,8 +71,12 @@ const AutoCompleteTextInput = () => {
     setLocationText(newText);
   }
 
-  function handlePress() {
-    setLocationText(currentLocation);
+  function handleButtonPress() {
+    if (currentLocation !== '')
+      setLocationText(currentLocation);
+    else {
+      getCurrentLocation();
+    }
     handleFocus();
   }
 
@@ -80,44 +84,37 @@ const AutoCompleteTextInput = () => {
     <GooglePlacesAutocomplete
       text={locationText}
       placeholder=""
-      minLength={2} // minimum length of text to search
+      minLength={1}
       autoFocus={false}
       fetchDetails={true}
       query={{
-        // available options: https://developers.google.com/places/web-service/autocomplete
         key: 'AIzaSyApho5gze9a7EisJSrFKthqDHun65Tp3MU',
-        language: 'en', // language of the results
-        types: '(cities)', // default: 'geocode'
+        language: 'en',
+        types: '(cities)',
       }}
       styles={styles.autocomplete}
       onTextInputFocus={handleFocus}
       onTextInputBlur={handleBlur}
       onTextInputTextChange={handleTextChange}
-      currentLocation={false} // Will add a 'Current location' button at the top of the predefined places list
+      currentLocation={false}
       currentLocationLabel="Current location"
-      nearbyPlacesAPI="GooglePlacesSearch" // Which API to use: GoogleReverseGeocoding or GooglePlacesSearch
-      GoogleReverseGeocodingQuery={
-        {
-          // available options for GoogleReverseGeocoding API : https://developers.google.com/maps/documentation/geocoding/intro
-        }
-      }
+      nearbyPlacesAPI="GooglePlacesSearch"
+      GoogleReverseGeocodingQuery={{}}
       GooglePlacesSearchQuery={{
-        // available options for GooglePlacesSearch API : https://developers.google.com/places/web-service/search
         rankby: 'distance',
         type: 'cafe',
       }}
       GooglePlacesDetailsQuery={{
-        // available options for GooglePlacesDetails API : https://developers.google.com/places/web-service/details
         fields: 'formatted_address',
       }}
       filterReverseGeocodingByTypes={[
         'locality',
         'administrative_area_level_3',
-      ]} // filter the reverse geocoding results by types - ['locality', 'administrative_area_level_3'] if you want to display only cities
+      ]}
       predefinedPlaces={['']}
-      renderLeftButton={() => <Text style={styles.label}>Location</Text>}
+      renderLeftButton={() => <Text style={styles.labelStyle}>Location</Text>}
       renderRightButton={() => (
-        <Icon name="direction" style={styles.button} onPress={handlePress} />
+        <Icon name="direction" style={styles.button} onPress={handleButtonPress} />
       )}
     />
   );
@@ -126,6 +123,7 @@ const AutoCompleteTextInput = () => {
 let currentLocation = '';
 
 function getCurrentLocation() {
+  if (!locationPermissionGranted()) return;
   Geolocation.getCurrentPosition(
     async position => {
       let queryParams = {
@@ -168,6 +166,18 @@ function getCurrentLocation() {
     },
     {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
   );
+}
+
+async function locationPermissionGranted() {
+  let granted = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    {
+      title: "Location Permission",
+      message: "This app needs access to your phone's location"
+    }
+  );
+  if (granted !== PermissionsAndroid.RESULTS.GRANTED) return false;
+  else return true;
 }
 
 function toQueryParams(object) {
