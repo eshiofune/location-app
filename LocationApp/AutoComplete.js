@@ -34,9 +34,9 @@ const AutoCompleteTextInput = () => {
         paddingLeft: '4%',
       },
       listView: {
-        height: 100,
-        minHeight: 100,
-        maxHeight: 100,
+        height: 200,
+        minHeight: 200,
+        maxHeight: 200,
       },
     },
     labelStyle: {
@@ -90,7 +90,7 @@ const AutoCompleteTextInput = () => {
       query={{
         key: 'AIzaSyApho5gze9a7EisJSrFKthqDHun65Tp3MU',
         language: 'en',
-        types: '(cities)',
+        types: 'address',
       }}
       styles={styles.autocomplete}
       onTextInputFocus={handleFocus}
@@ -108,6 +108,7 @@ const AutoCompleteTextInput = () => {
         fields: 'formatted_address',
       }}
       filterReverseGeocodingByTypes={[
+        'address',
         'locality',
         'administrative_area_level_3',
       ]}
@@ -129,7 +130,7 @@ function getCurrentLocation() {
       let queryParams = {
         key: 'AIzaSyApho5gze9a7EisJSrFKthqDHun65Tp3MU',
         latlng: `${position.coords.latitude},${position.coords.longitude}`,
-        result_type: 'locality',
+        result_type: 'neighborhood',
       };
       const url = `https://maps.google.com/maps/api/geocode/json?${toQueryParams(
         queryParams,
